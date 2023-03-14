@@ -1,4 +1,4 @@
 *~
 db
-debian-repository/dists
 debian-repository/pool
+debian-repository/dists
