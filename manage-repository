@@ -59,7 +59,11 @@ add() {
 }
 
 rebuild() {
-    reprepro --basedir $base --morguedir $morgue --outdir $output export
+    for distro in develop bullseye
+    do
+	echo "rebuilding $distro"
+	reprepro --basedir $base --morguedir $morgue --outdir $output export $distro
+    done
 }
 
 case $task in
