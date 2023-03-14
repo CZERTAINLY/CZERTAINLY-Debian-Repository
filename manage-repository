@@ -1,35 +1,78 @@
 #!/bin/bash
 
+base='/var/www/deb.tomasek.cz'
+morgue="$base/morgue"
+output="$base/debian-repository"
+pgp_key='/root/CZERTAINLY.deb.pgp-key.private'
+
+task=$1
+dist=$2
+package=$3
+
 usage_exit() {
     echo "3Key.Company repository manager
 
 Usage:
-    $0 <bullseye|develop> <package>
+    $0 add <bullseye|develop> <package>
+    $0 rebuild
 "
     exit 1
 }
 
-base='/var/www/deb.tomasek.cz'
-morgue="$base/morgue"
-output="$base/debian-repository"
+load_pgp_key() {
+    TEMP4PGP="$(mktemp -d /tmp/manage-repository-pgp-XXXXXX)"
+    export GNUPGHOME="$TEMP4PGP"
 
-dist=$1
-package=$2
+    cat $pgp_key | gpg --import
+}
 
-if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ]
-then
-    echo "Unknown distribution=$dist
+unload_pgp_key() {
+    rm $TEMP4PGP/pubring.kbx 2>/dev/null
+    rm $TEMP4PGP/trustdb.gpg 2>/dev/null
+    rm $TEMP4PGP/private-keys-v1.d 2>/dev/null
+    rm $TEMP4PGP/private-keys-v1.d/C31E15BE37D9EBF33F6B61F8EE8582C166E85FF0.key 2>/dev/null
+    rm $TEMP4PGP/pubring.kbx~ 2>/dev/null
+    rmdir $TEMP4PGP/private-keys-v1.d 2>/dev/null
+    rmdir $TEMP4PGP 2>/dev/null
+}
+
+add() {
+    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ]
+    then
+	echo "Unknown distribution=$dist
 ";
-    usage_exit;
-fi
+	unload_pgp_key
+	usage_exit
+    fi
 
-if ! [ -f "$package" ]
-then
-    echo "File $package doesn't exists.
+    if ! [ -f "$package" ]
+    then
+	echo "File $package doesn't exists.
 "
-    usage_exit;
-fi
+	unload_pgp_key
+	usage_exit
+    fi
 
-echo "dist=$dist package=$package"
+    echo "dist=$dist package=$package"
 
-reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
+    reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
+}
+
+rebuild() {
+    reprepro --basedir $base --morguedir $morgue --outdir $output export
+}
+
+case $task in
+    'add')
+	load_pgp_key
+	add
+	unload_pgp_key
+	;;
+    'rebuild')
+	load_pgp_key
+	rebuild
+	unload_pgp_key
+	;;
+    *)
+	usage_exit
+esac
