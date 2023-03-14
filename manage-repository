@@ -1,0 +1,35 @@
+#!/bin/bash
+
+usage_exit() {
+    echo "3Key.Company repository manager
+
+Usage:
+    $0 <bullseye|develop> <package>
+"
+    exit 1
+}
+
+base='/var/www/deb.tomasek.cz'
+morgue="$base/morgue"
+output="$base/debian-repository"
+
+dist=$1
+package=$2
+
+if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ]
+then
+    echo "Unknown distribution=$dist
+";
+    usage_exit;
+fi
+
+if ! [ -f "$package" ]
+then
+    echo "File $package doesn't exists.
+"
+    usage_exit;
+fi
+
+echo "dist=$dist package=$package"
+
+reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
