@@ -23,7 +23,7 @@ load_pgp_key() {
     TEMP4PGP="$(mktemp -d /tmp/manage-repository-pgp-XXXXXX)"
     export GNUPGHOME="$TEMP4PGP"
 
-    cat $pgp_key | gpg --import
+    cat $pgp_key | gpg --import 2>/dev/null
 }
 
 unload_pgp_key() {
@@ -36,7 +36,7 @@ unload_pgp_key() {
     rmdir $TEMP4PGP 2>/dev/null
 }
 
-add() {
+check_dist() {
     if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ]
     then
 	echo "Unknown distribution=$dist
@@ -44,7 +44,9 @@ add() {
 	unload_pgp_key
 	usage_exit
     fi
+}
 
+check_package() {
     if ! [ -f "$package" ]
     then
 	echo "File $package doesn't exists.
@@ -52,8 +54,22 @@ add() {
 	unload_pgp_key
 	usage_exit
     fi
+}
 
-    echo "dist=$dist package=$package"
+add() {
+    check_dist
+    check_package
+
+    echo "adding dist=$dist package=$package"
+
+    pkg_name_v=`basename $package _all.deb | sed "s/_/ /"`
+    pkg_name_nov=`basename $package _all.deb | sed "s/_.*$//"`
+
+    if reprepro --basedir $base list $dist |grep "${pkg_name_v}$" > /dev/null
+    then
+	echo "Package $pkg_name_v is present in repository, has to be removed?!"
+	reprepro --basedir $base --morguedir $morgue --outdir $output remove $dist $pkg_name_nov
+    fi
 
     reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
 }
