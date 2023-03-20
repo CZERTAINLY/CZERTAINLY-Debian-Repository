@@ -2,3 +2,5 @@
 db
 debian-repository/pool
 debian-repository/dists
+morgue
+incoming/*.deb

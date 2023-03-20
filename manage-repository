@@ -37,12 +37,18 @@ unload_pgp_key() {
 }
 
 check_dist() {
-    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ]
+    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ] && [ "x$dist" != 'xmain' ]
     then
 	echo "Unknown distribution=$dist
 ";
 	unload_pgp_key
 	usage_exit
+    fi
+
+    if [ "x$dist" == 'xmain' ]
+    then
+	echo "Dist main is infact bullseye, rewriting"
+	dist='bullseye'
     fi
 }
 
