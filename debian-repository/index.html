@@ -8,6 +8,6 @@ To add CZERTAINLY packages repository to your system execute:
 <pre>
   wget -O - http://deb.czertainly.com/deb.czertainly.com.gpg | sudo gpg --dearmor --yes --output /usr/share/keyrings/czertainly.com.gpg
   sudo echo "deb [signed-by=/usr/share/keyrings/czertainly.com.gpg] http://deb.czertainly.com/ bullseye main" > /etc/apt/sources.list.d/czertainly.list
+  apt update
 </pre>
-<p>Put:<br><br><b>deb [trusted=yes] http://deb.czertainly.com /</b><br><br>to your sources.list.</p>
 </html>
