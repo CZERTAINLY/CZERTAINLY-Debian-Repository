@@ -13,8 +13,10 @@ usage_exit() {
     echo "3Key.Company repository manager
 
 Usage:
-    $0 add <bullseye|develop> <package>
+    $0 add <bullseye|develop|stable> <package>
     $0 rebuild
+
+stable distribution obsoleted, it is pre 2.6.0 appliance!
 "
     exit 1
 }
@@ -37,7 +39,7 @@ unload_pgp_key() {
 }
 
 check_dist() {
-    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ] && [ "x$dist" != 'xmain' ]
+    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ] && [ "x$dist" != 'xmain' ] && [ "x$dist" != 'xstable' ]
     then
 	echo "Unknown distribution=$dist
 ";

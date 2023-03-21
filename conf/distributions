@@ -1,3 +1,11 @@
+Origin: CZERTAINLY Old Debian Repository
+Label: CZERTAINLY Old Debian Repository
+Codename: stable
+Architectures: i386 amd64
+Components: main
+Description: CZERTAINLY Old Debian Repository for pre 2.6.0 Appliances
+SignWith: 38390130A83E4A94087FBC6F787ECEB3E292D8D7
+
 Origin: CZERTAINLY Debian Repository
 Label: CZERTAINLY Debian Repository
 Codename: bullseye
