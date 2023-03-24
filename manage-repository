@@ -1,6 +1,8 @@
 #!/bin/bash
 
-base='/var/www/deb.tomasek.cz'
+full_path=`realpath $0`
+script_name=`basename $0`
+base=`echo "$full_path" | sed "s/\/$script_name$//"`
 morgue="$base/morgue"
 output="$base/debian-repository"
 pgp_key='/root/CZERTAINLY.deb.pgp-key.private'
@@ -10,7 +12,7 @@ dist=$2
 package=$3
 
 usage_exit() {
-    echo "3Key.Company repository manager
+    echo "CZERTAINLY repository manager
 
 Usage:
     $0 add <bullseye|develop|stable> <package>
