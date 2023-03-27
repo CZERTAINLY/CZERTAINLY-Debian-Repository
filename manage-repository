@@ -17,6 +17,7 @@ usage_exit() {
 Usage:
     $0 add <bullseye|develop|stable> <package>
     $0 rebuild
+    $0 list
 
 stable distribution obsoleted, it is pre 2.6.0 appliance!
 "
@@ -85,10 +86,19 @@ add() {
 }
 
 rebuild() {
-    for distro in develop bullseye
+    for distro in develop bullseye stable
     do
 	echo "rebuilding $distro"
 	reprepro --basedir $base --morguedir $morgue --outdir $output export $distro
+    done
+}
+
+list() {
+    for distro in develop bullseye stable
+    do
+	echo "Content of $distro"
+	reprepro --basedir $base --morguedir $morgue --outdir $output list $distro
+	echo ""
     done
 }
 
@@ -102,6 +112,9 @@ case $task in
 	load_pgp_key
 	rebuild
 	unload_pgp_key
+	;;
+    'list')
+	list
 	;;
     *)
 	usage_exit
