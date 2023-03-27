@@ -1,0 +1,121 @@
+#!/bin/bash
+
+full_path=`realpath $0`
+script_name=`basename $0`
+base=`echo "$full_path" | sed "s/\/$script_name$//"`
+morgue="$base/morgue"
+output="$base/debian-repository"
+pgp_key='/root/CZERTAINLY.deb.pgp-key.private'
+
+task=$1
+dist=$2
+package=$3
+
+usage_exit() {
+    echo "CZERTAINLY repository manager
+
+Usage:
+    $0 add <bullseye|develop|stable> <package>
+    $0 rebuild
+    $0 list
+
+stable distribution obsoleted, it is pre 2.6.0 appliance!
+"
+    exit 1
+}
+
+load_pgp_key() {
+    TEMP4PGP="$(mktemp -d /tmp/manage-repository-pgp-XXXXXX)"
+    export GNUPGHOME="$TEMP4PGP"
+
+    cat $pgp_key | gpg --import 2>/dev/null
+}
+
+unload_pgp_key() {
+    rm $TEMP4PGP/pubring.kbx 2>/dev/null
+    rm $TEMP4PGP/trustdb.gpg 2>/dev/null
+    rm $TEMP4PGP/private-keys-v1.d 2>/dev/null
+    rm $TEMP4PGP/private-keys-v1.d/C31E15BE37D9EBF33F6B61F8EE8582C166E85FF0.key 2>/dev/null
+    rm $TEMP4PGP/pubring.kbx~ 2>/dev/null
+    rmdir $TEMP4PGP/private-keys-v1.d 2>/dev/null
+    rmdir $TEMP4PGP 2>/dev/null
+}
+
+check_dist() {
+    if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ] && [ "x$dist" != 'xmain' ] && [ "x$dist" != 'xstable' ]
+    then
+	echo "Unknown distribution=$dist
+";
+	unload_pgp_key
+	usage_exit
+    fi
+
+    if [ "x$dist" == 'xmain' ]
+    then
+	echo "Dist main is infact bullseye, rewriting"
+	dist='bullseye'
+    fi
+}
+
+check_package() {
+    if ! [ -f "$package" ]
+    then
+	echo "File $package doesn't exists.
+"
+	unload_pgp_key
+	usage_exit
+    fi
+}
+
+add() {
+    check_dist
+    check_package
+
+    echo "adding dist=$dist package=$package"
+
+    pkg_name_v=`basename $package _all.deb | sed "s/_/ /"`
+    pkg_name_nov=`basename $package _all.deb | sed "s/_.*$//"`
+
+    if reprepro --basedir $base list $dist |grep "${pkg_name_v}$" > /dev/null
+    then
+	echo "Package $pkg_name_v is present in repository, has to be removed?!"
+	reprepro --basedir $base --morguedir $morgue --outdir $output remove $dist $pkg_name_nov
+    fi
+
+    reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
+}
+
+rebuild() {
+    for distro in develop bullseye stable
+    do
+	echo "rebuilding $distro"
+	reprepro --basedir $base --morguedir $morgue --outdir $output export $distro
+    done
+}
+
+list() {
+    for distro in develop bullseye stable
+    do
+	echo "Content of $distro"
+	reprepro --basedir $base --morguedir $morgue --outdir $output list $distro
+	echo ""
+    done
+}
+
+case $task in
+    'add')
+	load_pgp_key
+	add
+	unload_pgp_key
+	;;
+    'rebuild')
+	load_pgp_key
+	rebuild
+	unload_pgp_key
+	;;
+    'list')
+	list
+	;;
+    *)
+	usage_exit
+esac

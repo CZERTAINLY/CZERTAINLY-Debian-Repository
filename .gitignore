@@ -1,3 +1,10 @@
+*~
+db
+debian-repository/pool
+debian-repository/dists
+morgue
+incoming/*.deb
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
