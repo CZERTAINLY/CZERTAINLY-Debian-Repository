@@ -44,10 +44,9 @@ unload_pgp_key() {
 check_dist() {
     if [ "x$dist" != 'xdevelop' ] && [ "x$dist" != 'xbullseye' ] && [ "x$dist" != 'xmain' ] && [ "x$dist" != 'xstable' ]
     then
-	echo "Unknown distribution=$dist
+	echo "Unknown distribution=$dist! REWRITING TO 'develop'
 ";
-	unload_pgp_key
-	usage_exit
+	dist='develop'
     fi
 
     if [ "x$dist" == 'xmain' ]
@@ -78,11 +77,33 @@ add() {
 
     if reprepro --basedir $base list $dist |grep "${pkg_name_v}$" > /dev/null
     then
-	echo "Package $pkg_name_v is present in repository, has to be removed?!"
+	echo "Package $pkg_name_v is present in repository. Removing it to be able update it!"
 	reprepro --basedir $base --morguedir $morgue --outdir $output remove $dist $pkg_name_nov
     fi
 
-    reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package
+    tmpf=`mktemp /tmp/debrepo-XXXX`
+    reprepro --basedir $base --morguedir $morgue --outdir $output includedeb $dist $package 2>&1 | tee $tmpf
+
+    if grep 'There have been errors' "$tmpf" >/dev/null
+    then
+	if grep 'Already existing files can only be included again' "$tmpf" >/dev/null
+	then
+	    echo "
+
+If specific package is present in one distro, it is posible to include
+it back into other distro only if it has same hashes. This script very
+likely removed it from '$dist' but seems to be unable put modified
+version back. Increase version or sort this problem someother
+way. Listing packages in all managed repositories:
+
+"
+	    list
+	fi
+	rm $tmpf
+	exit 1
+    fi
+
+    rm $tmpf
 }
 
 rebuild() {
