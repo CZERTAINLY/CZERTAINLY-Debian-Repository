@@ -39,6 +39,8 @@ unload_pgp_key() {
     rm $TEMP4PGP/pubring.kbx~ 2>/dev/null
     rmdir $TEMP4PGP/private-keys-v1.d 2>/dev/null
     rmdir $TEMP4PGP 2>/dev/null
+    # cleaning function should terminate always OK
+    true
 }
 
 check_dist() {
