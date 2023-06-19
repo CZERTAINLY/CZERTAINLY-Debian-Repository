@@ -44,24 +44,19 @@ unload_pgp_key() {
 }
 
 check_dist() {
-    if [ "x$dist" == 'xbullseye' ]
-    then
-	true
-    elif [ "x$dist" == 'xstable' ]
-    then
-	true
-    elif [ "x$dist" == 'xdevelop' ]
-    then
-	true
-    elif [ "x$dist" == 'xmain' ] || [ "x$dist" == 'xmaster' ]
-    then
-	echo "Dist $dist is infact bullseye, rewriting"
-	dist='bullseye'
-    else
-	echo "Unknown distribution=$dist! REWRITING TO 'develop'
-";
-	dist='develop'
-    fi
+    case "$dist" in
+	'bullseye'|'stable'|'develop')
+	    true
+	    ;;
+	'main'|'master')
+	    echo "Dist $dist is infact bullseye, rewriting"
+	    dist='bullseye'
+	    ;;
+	*)
+	    echo "Unknown distribution=$dist! REWRITING TO 'develop'"
+	    dist='develop'
+	    ;;
+    esac
 }
 
 check_package() {
